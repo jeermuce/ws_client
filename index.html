@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>WebSocket Demo</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <!--[if lt IE 7]>
+        <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+    <button id="helloButton">Say Hello</button>
+    <input type="text" id="messageInput" placeholder="Type a message" />
+    <button id="sendMessageButton">Send Message</button>
+    <h1 id="allMessages">All Messages:</h1>
+    <h3 id="clientMessages">Your Messages:</h3>
+    <script async defer>
+        const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+        const socket = new WebSocket(`${protocol}://jeermuce-server.opensrc.mx/`);
+
+        // Log when the connection is established
+        socket.onopen = () => {
+            console.log('WebSocket connection opened');
+        };
+
+        // Handle messages received from the server
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.type === "allMessages") {
+                document.getElementById('allMessages').innerText = `All Messages: ${data.messages.join(', ')}`;
+            } else if (data.type === "clientMessages") {
+                document.getElementById('clientMessages').innerText = `Your Messages: ${data.messages.join(', ')}`;
+            }
+        };
+
+        // Log errors
+        socket.onerror = (error) => {
+            console.error('WebSocket error: ', error);
+        };
+
+        // Log when the connection is closed
+        socket.onclose = () => {
+            console.log('WebSocket connection closed');
+        };
+
+        // Send a predefined message when the hello button is clicked
+        document.getElementById('helloButton').addEventListener('click', () => {
+            socket.send('Hello from client');
+        });
+
+        // Send a message from the input field when the send message button is clicked
+        document.getElementById('sendMessageButton').addEventListener('click', () => {
+            const message = document.getElementById('messageInput').value;
+            socket.send(message);
+        });
+    </script>
+</body>
+
+</html>
